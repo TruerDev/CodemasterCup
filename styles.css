@@ -341,6 +341,48 @@ button:hover {
     padding: 10px;
     border-left: 1px solid #bcbcbc;
 }
+
+/* Стили для параметров обрезки */
+.crop-params {
+    padding: 10px;
+}
+.crop-params label {
+    font-size: large;
+}
+.crop-params select {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    border-radius: 7px;
+    border-color: #33aada;
+    border-width: 3px;
+    font-size: large;
+}
+/* Стили для параметров обрезки */
+
+/* Стили для параметров изменения размеров изображения */
+.resize-params {
+    display: flex;
+    flex-direction: column; /* Элементы расположены в колонку */
+    gap: 10px; /* Пробел между элементами */
+    padding: 10px;
+}
+.resize-params label {
+    font-size: large;
+}
+.resize-params input {
+    border-radius: 8px;
+    border: 2px solid rgb(0, 0, 0);
+    border-color:rgb(214, 214, 214);
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    font-size: larger;
+    padding: 0px 10px;
+}
+/* Стили для параметров изменения размеров изображения */
+
+
 /* Правая панель (инспектор) */
 
 /* Нижняя панель кнопок */

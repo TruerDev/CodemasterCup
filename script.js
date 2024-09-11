@@ -188,17 +188,20 @@ document.getElementById('filtersButton').addEventListener('click', showFiltersPa
 
 function showCropParams() {
     inspectorContent.innerHTML = `
-        <label for="cropRatio">Crop Ratio</label>
-        <select id="cropRatio">
-            <option value="1:1">1:1</option>
-            <option value="16:9">16:9</option>
-            <option value="4:3">4:3</option>
-        </select>
+        <div class="tool-params crop-params">
+            <label for="cropRatio">Crop ratio</label>
+            <select id="cropRatio">
+                <option value="1:1">1:1</option>
+                <option value="16:9">16:9</option>
+                <option value="4:3">4:3</option>
+            </select>
+        </div>
     `;
 }
 
 function showResizeParams() {
     inspectorContent.innerHTML = `
+    <div class="tool-params resize-params">
         <label for="widthInput">Width (px)</label>
         <input type="number" id="widthInput">
         
@@ -208,11 +211,13 @@ function showResizeParams() {
         <label for="constrainProportions">
             <input type="checkbox" id="constrainProportions"> Constrain proportions
         </label>
+    </div>
     `;
 }
 
 function showRotateFlipParams() {
     inspectorContent.innerHTML = `
+    <div class="tool-params rotate-flip-params">
         <label>Rotate</label>
         <button id="rotateLeftButton">Rotate Left</button>
         <button id="rotateRightButton">Rotate Right</button>
@@ -220,11 +225,13 @@ function showRotateFlipParams() {
         <label>Flip</label>
         <button id="flipHorizontalButton">Flip Horizontal</button>
         <button id="flipVerticalButton">Flip Vertical</button>
+    </div>
     `;
 }
 
 function showAdjustParams() {
     inspectorContent.innerHTML = `
+    <div class="tool-params adjust-params">
         <label for="brightness">Brightness</label>
         <input type="range" id="brightness" min="0" max="200" value="100">
         
@@ -236,14 +243,17 @@ function showAdjustParams() {
         
         <label for="exposition">Exposition</label>
         <input type="range" id="exposition" min="0" max="200" value="100">
+    </div>
     `;
 }
 
 function showFiltersParams() {
     inspectorContent.innerHTML = `
+    <div class="tool-params filers-params">
         <button id="filterNone">None</button>
         <button id="filterBW">Black & White</button>
         <button id="filterSepia">Sepia</button>
         <button id="filterVintage">Vintage</button>
+    </div>
     `;
 }
