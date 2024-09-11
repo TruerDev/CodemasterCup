@@ -1,0 +1,449 @@
+@font-face {
+    font-family: 'CustomFont';
+    src: url('SUSE-VariableFont_wght.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --primary-bg: #f0f0f0;
+    --primary-border: #ccc;
+    --primary-color: #555;
+    --highlight-bg: #eef;
+    --highlight-border: #00f;
+    --error-color: red;
+    --button-bg: #cfcfcf;
+    --button-color: white;
+    --button-hover-bg: #cfcfcf;
+    --preview-bg: rgb(102, 163, 137);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'CustomFont', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+button {
+    font-family: 'CustomFont', sans-serif;
+    background-color: var(--button-bg);
+    color: var(--button-color);
+    padding: 5px 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.upload-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--primary-bg);
+}
+
+.upload-box {
+    border: 2px dashed var(--primary-border);
+    border-radius: 13px;
+    background-color: #fff;
+    padding: 100px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.upload-box.dragover {
+    border-color: var(--highlight-border);
+    background-color: var(--highlight-bg);
+}
+
+.upload-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+}
+
+.upload-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.upload-subtext {
+    color: #888;
+    font-size: 14px;
+}
+
+.hidden {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none; /* Элемент будет невидим и не интерактивен */
+}
+
+.visible {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.display-none {
+    display: none !important;
+}
+
+#errorContainer {
+    border: 2px dashed #f04040;
+    border-radius: 13px;
+    background-color: #fff;
+    padding: 100px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#errorMessage {
+    color: var(--error-color);
+    font-weight: bold;
+}
+
+#fileName {
+    color: var(--primary-color);
+}
+
+#loader {
+    /* Полный экран для перекрытия всего */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* Располагаем анимацию и текст по вертикали */
+    z-index: 1000; /* Поверх всех элементов */
+}
+
+#loaderAnimation {
+    /* Миниатюрная анимация */
+    width: 60px;
+    height: 60px;
+    --_g: no-repeat radial-gradient(circle closest-side, #000 90%, #0000);
+    background: 
+      var(--_g) 0% 50%,
+      var(--_g) 50% 50%,
+      var(--_g) 100% 50%;
+    background-size: calc(100%/3) 50%;
+    animation: l3 1s infinite linear;
+}
+
+#loaderText {
+    margin-top: 15px; /* Отступ между анимацией и текстом */
+    font-family: 'CustomFont', sans-serif;
+    font-size: 16px;
+    color: #000; /* Цвет текста */
+}
+
+@keyframes l3 {
+    20% {background-position: 0% 0%, 50% 50%, 100% 50%}
+    40% {background-position: 0% 100%, 50% 0%, 100% 50%}
+    60% {background-position: 0% 50%, 50% 100%, 100% 0%}
+    80% {background-position: 0% 50%, 50% 50%, 100% 100%}
+}
+
+
+#tryAgainButton {
+    margin-top: 10px;
+    padding: 10px;
+}
+
+#previewImg {
+    position: relative;
+    text-align: center;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#previewImage {
+    max-width: 70vw;
+    max-height: 70vh;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+    position: relative; /* Добавлено, чтобы toolbar позиционировался относительно изображения */
+}
+
+.image-toolbar {
+    position: absolute;
+    top: -2%; /* Расположим над изображением */
+    left: -1%; /* Небольшой отступ от левого края изображения */
+    background-color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+}
+
+.image-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 5px;
+}
+
+.toolbar-button {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.toolbar-icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* Основное окно редактирования */
+.edit-window {
+    position: fixed;
+    top: 0;
+    left: 100%;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: left 0.5s ease; /* Плавное появление */
+    z-index: 1000;
+}
+
+.edit-window.visible {
+    left: 0;
+}
+/* Основное окно редактирования */
+
+/* Заголовок */
+.edit-header {
+    height: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    border-bottom: 1px solid #bcbcbc;
+}
+
+.edit-header h2 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+}
+
+.close-button img {
+    width: 16px;
+    height: 16px;
+}
+
+.edit-content { /* Основное содержимое окна */
+    display: flex;
+    flex-grow: 1;
+}
+/* Заголовок */
+
+/* Левая панель инструментов */
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    background-color: #ffffff;
+    padding: 10px;
+    border-right: 1px solid #bcbcbc;
+}
+
+.tool-button {
+    display: flex;
+    color:#000;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.tool-button:hover {
+    color: #33aada;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tool-button img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    transition: 0.3s ease;
+}
+
+.tool-button:hover img {
+    filter: invert(75%) sepia(100%) saturate(10000%) hue-rotate(180deg) brightness(100%) contrast(100%);
+}
+/* Левая панель инструментов */
+
+/* Рабочая область */
+.workspace {
+    flex-grow: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Изображение в рабочей области */
+.workspace img {
+    max-width: 70vw;
+    max-height: 70vh;
+    height: auto;
+    width: auto;
+    object-fit: contain; /* Изображение вписывается в контейнер, сохраняя пропорции */
+}
+/* Рабочая область */
+
+/* Правая панель (инспектор) */
+.inspector {
+    width: 300px;
+    background-color: #ffffff;
+    padding: 10px;
+    border-left: 1px solid #bcbcbc;
+}
+/* Правая панель (инспектор) */
+
+/* Нижняя панель кнопок */
+.edit-footer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px;
+    height: 60px;
+    background-color: #ffffff;
+    border-top: 1px solid #bcbcbc;
+}
+/* Нижняя панель кнопок */
+
+/* Выпадающий список */
+.dropdown-elements {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    left: 220px; /* Отступ для отображения справа от кнопки */
+    top: 0;
+}
+
+.dropdown-elements.hidden {
+    display: none;
+}
+
+.dropdown-button {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-button:hover {
+    background-color: #f0f0f0;
+}
+/* Выпадающий список */
+
+
+#revertButton, #cancelButton {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    padding: 10px 20px;
+    border: 1px solid rgb(79, 79, 79);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#revertButton:hover, #cancelButton:hover {
+    background-color: #cfcfcf;
+}
+
+#saveButton {
+    background-color: #33aada;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#saveButton:hover {
+    background-color: #2c92ba;
+}
+
+#undoButton, #redoButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#undoButton:hover, #redoButton:hover {
+    background-color: #cfcfcf;
+}
+
+#undoButton img, #redoButton img {
+    width: 24px;
+    height: 24px;
+}
+
+
+
+
+@media (max-width: 768px) {
+    .upload-box {
+        padding: 50px;
+    }
+
+    .upload-text {
+        font-size: 16px;
+    }
+
+    .upload-subtext {
+        font-size: 12px;
+    }
+}

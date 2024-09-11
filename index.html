@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="upload-container" id="uploadContainer">
+        <section class="upload-box" id="uploadBox" 
+             ondrop="handleDrop(event)" 
+             ondragover="handleDragOver(event)">
+            <img src="icons/square-plus.png" alt="Upload Icon" class="upload-icon">
+            <p class="upload-text">Drop file to upload or select file</p>
+            <p class="upload-subtext">Max 5 MB, JPEG, PNG only</p>
+            <input type="file" id="fileInput" accept="image/jpeg, image/png" hidden onchange="">
+        </section>
+        
+        <section class="error-message display-none" id="errorContainer" role="alert">
+            <p id="errorMessage"></p>
+            <p id="fileName"></p>
+            <button id="tryAgainButton" onclick="resetUpload()">Try Again</button>
+        </section>
+
+        <section id="loader" class="display-none">
+            <div id="loaderAnimation"></div>
+            <p id="loaderText"></p> 
+        </section>
+        
+        
+        <section class="image-preview display-none" id="previewImg">
+            <div class="image-toolbar">
+                <span id="imageName" class="image-name">Image name</span>
+                <button class="toolbar-button" aria-label="Replace Image" id="replaceImageButton">
+                    <img src="icons/refresh.png" alt="Replace" class="toolbar-icon">
+                </button>
+                <button class="toolbar-button" aria-label="Start Editing" id="startEditingButton">
+                    <img src="icons/edit-text.png" alt="Edit" class="toolbar-icon">
+                </button>
+                <button class="toolbar-button" aria-label="Delete Image" id="deleteImageButton">
+                    <img src="icons/bin.png" alt="Delete" class="toolbar-icon">
+                </button>
+            </div>
+            <img src="" alt="Image preview" id="previewImage">
+        </section>
+        
+        <section id="editWindow" class="edit-window hidden">
+            <div class="edit-header">
+                <h2>Image Edit</h2>
+                <button id="closeEditButton" class="close-button">
+                    <img src="icons/edit-close.png" alt="Close">
+                </button>
+            </div>
+        
+            <div class="edit-content">
+                <!-- Левая панель инструментов -->
+                <div class="toolbar">
+                    <button class="tool-button" id="cropButton">
+                        <img src="icons/edit-crop.png" alt="Crop">
+                        <span>Crop</span>
+                    </button>
+                    <button class="tool-button" id="resizeButton">
+                        <img src="icons/edit-resize.png" alt="Resize">
+                        <span>Resize</span>
+                    </button>
+                    <button class="tool-button" id="RotateFlipButton">
+                        <img src="icons/edit-rotate-n-flip.png" alt="RotateAndFlip">
+                        <span>Rotate and flip</span>
+                    </button>
+                    <button class="tool-button" id="adjustButton">
+                        <img src="icons/edit-adjust.png" alt="Adjust">
+                        <span>Adjust</span>
+                    </button>
+                    <button class="tool-button" id="filtersButton">
+                        <img src="icons/edit-filters.png" alt="Filters">
+                        <span>Filters</span>
+                    </button>
+                    <button class="tool-button" id="elementsButton">
+                        <img src="icons/edit-elements.png" alt="Elements">
+                        <span>Elements</span>
+                    </button>
+                    <div class="dropdown-elements hidden" id="elementsDropdown">
+                        <button class="dropdown-button">Text</button>
+                        <button class="dropdown-button">Line</button>
+                        <button class="dropdown-button">Circle</button>
+                        <button class="dropdown-button">Rectangle</button>
+                    </div>
+                </div>
+        
+                <!-- Рабочая область -->
+                <div class="workspace">
+                    <img src="" alt="Editable Image" id="editableImage">
+                </div>
+        
+                <!-- Правая панель (инспектор) -->
+                <div class="inspector" id="inspector">
+                    <h3>Tool Parameters</h3>
+                    <div id="inspectorContent">
+                        <!-- Параметры инструментов будут загружаться сюда -->
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Нижняя панель с кнопками -->
+            <div class="edit-footer">
+                <button id="revertButton">Revert to Original</button>
+                <button id="undoButton">
+                    <img src="icons/edit-undo.png" alt="Undo">
+                </button>
+                <button id="redoButton">
+                    <img src="icons/edit-redo.png" alt="Redo">
+                </button>
+                <button id="cancelButton">Cancel</button>
+                <button id="saveButton">Save</button>
+            </div>
+        </section>
+              
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>
