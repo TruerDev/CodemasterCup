@@ -20,6 +20,8 @@ const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 const VALID_TYPES = ['image/jpeg', 'image/png'];
 
+let globalImageSrc = '';
+
 // Загрузка изображения по нажатию
 uploadBox.addEventListener('click', () => fileInput.click());
 
@@ -40,16 +42,41 @@ document.getElementById('deleteImageButton').addEventListener('click', () => {
     fileInput.value = ''; // Очищаем поле выбора файла
 });
 
-// Показываем или скрываем выпадающий список при нажатии (окно изменения)
-elementsButton.addEventListener('click', () => {
+
+
+// Показываем или скрываем выпадающий список при нажатии на кнопку Elements
+elementsButton.addEventListener('click', (event) => {
+    event.stopPropagation(); // Останавливаем всплытие события
+
+    // Получаем позицию кнопки elementsButton
+    const buttonRect = elementsButton.getBoundingClientRect();
+    
+    // Устанавливаем позицию выпадающего списка рядом с кнопкой
+    elementsDropdown.style.top = `${buttonRect.bottom + window.scrollY}px`; // Положение под кнопкой
+    elementsDropdown.style.left = `${buttonRect.left + window.scrollX}px`; // Выравнивание по левому краю
+
+    // Показываем или скрываем dropdown
     elementsDropdown.classList.toggle('hidden');
+    elementsDropdown.classList.toggle('visible');
 });
 
-// Скрываем выпадающий список, если щелкнули вне его (окно изменения)
+// Скрываем выпадающий список, если щелкнули вне его
 document.addEventListener('click', (event) => {
     if (!elementsButton.contains(event.target) && !elementsDropdown.contains(event.target)) {
+        elementsDropdown.classList.remove('visible');
         elementsDropdown.classList.add('hidden');
     }
+});
+
+// Добавление обработчиков событий для кнопок инструментов
+const elementButtons = document.querySelectorAll('.dropdown-button');
+
+elementButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const toolName = button.querySelector('span').textContent;
+        console.log(`Вы выбрали инструмент: ${toolName}`);
+        // Здесь вызывайте функции для выбранных инструментов
+    });
 });
 
 // Показ окна редактирования
@@ -122,6 +149,14 @@ function handleFile(file) {
     } else {
         // Показываем анимацию загрузки
         showLoader(file.name);
+        
+        const imageSrc = URL.createObjectURL(file);
+
+        globalImageSrc = imageSrc;
+
+        // Проверим, что мы получаем корректный URL
+        console.log('Загруженный файл:', file);
+        console.log('Путь к изображению:', globalImageSrc);
 
         previewImage.src = URL.createObjectURL(file);
         editableImage.src = URL.createObjectURL(file);
@@ -136,6 +171,7 @@ function handleFile(file) {
                     hideLoader(); // Скрываем loader только после загрузки и показа предпросмотра
                 });
             }, 1000); // Время задержки для симуляции загрузки
+            URL.revokeObjectURL(imageSrc.src);
         };
     }
 }
@@ -218,13 +254,27 @@ function showResizeParams() {
 function showRotateFlipParams() {
     inspectorContent.innerHTML = `
     <div class="tool-params rotate-flip-params">
+        <!-- Надпись Rotate -->
         <label>Rotate</label>
-        <button id="rotateLeftButton">Rotate Left</button>
-        <button id="rotateRightButton">Rotate Right</button>
-        
+        <div class="button-group">
+            <button id="rotateLeftButton">
+                <img src="icons/rotate-left.png" alt="Rotate Left">
+            </button>
+            <button id="rotateRightButton">
+                <img src="icons/rotate-right.png" alt="Rotate Right">
+            </button>
+        </div>
+
+        <!-- Надпись Flip -->
         <label>Flip</label>
-        <button id="flipHorizontalButton">Flip Horizontal</button>
-        <button id="flipVerticalButton">Flip Vertical</button>
+        <div class="button-group">
+            <button id="flipHorizontalButton">
+                <img src="icons/flip-horizontal.png" alt="Flip Horizontal">
+            </button>
+            <button id="flipVerticalButton">
+                <img src="icons/flip-vertical.png" alt="Flip Vertical">
+            </button>
+        </div>
     </div>
     `;
 }
@@ -233,27 +283,103 @@ function showAdjustParams() {
     inspectorContent.innerHTML = `
     <div class="tool-params adjust-params">
         <label for="brightness">Brightness</label>
-        <input type="range" id="brightness" min="0" max="200" value="100">
+        <input type="range" id="brightness" min="0" max="100" value="50">
         
         <label for="contrast">Contrast</label>
-        <input type="range" id="contrast" min="0" max="200" value="100">
+        <input type="range" id="contrast" min="0" max="100" value="50">
         
         <label for="saturation">Saturation</label>
-        <input type="range" id="saturation" min="0" max="200" value="100">
+        <input type="range" id="saturation" min="0" max="100" value="50">
         
         <label for="exposition">Exposition</label>
-        <input type="range" id="exposition" min="0" max="200" value="100">
+        <input type="range" id="exposition" min="0" max="100" value="50">
     </div>
     `;
+
+    const sliders = document.querySelectorAll('.adjust-params input[type="range"]');
+    sliders.forEach(slider => {
+        updateSliderBackground(slider); // Установить начальный цвет
+        slider.addEventListener('input', function () {
+            updateSliderBackground(slider); // Обновлять цвет при изменении значения
+        });
+    });
 }
 
+function updateSliderBackground(slider) {
+    const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+    slider.style.background = `linear-gradient(to right, #33aada ${value}%, #ccc ${value}%)`;
+}
+
+
 function showFiltersParams() {
+    if (!globalImageSrc) {
+        console.error('Путь к изображению не определён');
+        return;
+    }
+
     inspectorContent.innerHTML = `
-    <div class="tool-params filers-params">
-        <button id="filterNone">None</button>
-        <button id="filterBW">Black & White</button>
-        <button id="filterSepia">Sepia</button>
-        <button id="filterVintage">Vintage</button>
+    <div class="tool-params filters-params">
+        <!-- Первая строка с кнопками и подписями -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <button id="filterNone" class="filter-button">
+                    <div class="img-wrapper">
+                        <img src="${globalImageSrc}" alt="None" class="filter-preview" id="previewNone">
+                    </div>
+                </button>
+                <span>None</span>
+            </div>
+            <div class="filter-group">
+                <button id="filterBW" class="filter-button">
+                    <div class="img-wrapper">
+                        <img src="${globalImageSrc}" alt="Black & White" class="filter-preview" id="previewBW">
+                    </div>
+                </button>
+                <span>Black&<br>White</span>
+            </div>
+        </div>
+
+        <!-- Вторая строка с кнопками и подписями -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <button id="filterSepia" class="filter-button">
+                    <div class="img-wrapper">
+                        <img src="${globalImageSrc}" alt="Sepia" class="filter-preview" id="previewSepia">
+                    </div>
+                </button>
+                <span>Sepia</span>
+            </div>
+            <div class="filter-group">
+                <button id="filterVintage" class="filter-button">
+                    <div class="img-wrapper">
+                        <img src="${globalImageSrc}" alt="Vintage" class="filter-preview" id="previewVintage">
+                    </div>
+                </button>
+                <span>Vintage</span>
+            </div>
+        </div>
     </div>
     `;
+
+    applyFilters(); // Применяем фильтры к изображениям
+
+    // Добавляем обработчики кликов на кнопки фильтров
+    const filterButtons = document.querySelectorAll('.filter-button');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Убираем класс active у всех кнопок
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Добавляем класс active на нажатую кнопку
+            button.classList.add('active');
+        });
+    });
+}
+
+
+// Функция для применения фильтров
+function applyFilters() {
+    document.getElementById('previewBW').style.filter = 'grayscale(100%)'; // Чёрно-белый фильтр
+    document.getElementById('previewSepia').style.filter = 'sepia(100%)';  // Сепия
+    document.getElementById('previewVintage').style.filter = 'contrast(120%) saturate(70%)';  // Винтаж
 }
