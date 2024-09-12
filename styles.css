@@ -391,7 +391,7 @@ button:hover {
 
 .button-group {
     display: flex;
-    gap: 10px; /* Отступ между кнопками */
+    gap: 15px; /* Отступ между кнопками */
     align-self: center;
 }
 
@@ -406,8 +406,9 @@ button:hover {
 }
 
 .rotate-flip-params button img {
-    width: 100px;
-    height: 65px;
+    width: 70px;
+    height: 70px;
+    margin: 10px;
 }
 
 .rotate-flip-params button:hover {
