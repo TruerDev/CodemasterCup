@@ -1,4 +1,3 @@
-// Константы и элементы DOM
 const uploadBox = document.getElementById('uploadBox');
 const fileInput = document.getElementById('fileInput');
 const errorContainer = document.getElementById('errorContainer');
@@ -15,101 +14,103 @@ const inspectorContent = document.getElementById('inspectorContent');
 const elementsButton = document.getElementById('elementsButton');
 const elementsDropdown = document.getElementById('elementsDropdown');
 const editableImage = document.getElementById('editableImage');
+const saveImageButton = document.getElementById('saveButton');
 
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 const VALID_TYPES = ['image/jpeg', 'image/png'];
 
 let globalImageSrc = '';
+let brightness = 100;
+let contrast = 100;
+let saturation = 100;
+let grayscale = 0;
+let sepia = 0;
 
-// Загрузка изображения по нажатию
+let originalImageSrc = '';
+
+let rotateAngle = 0, flipHorizontal = 1, flipVertical = 1;
+let imageType = "";
+
 uploadBox.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (event) => handleFile(event.target.files[0]));
 
-// Изменить выбранное изображение
 document.getElementById('replaceImageButton').addEventListener('click', () => {
     fileInput.click();
 });
-
-// Удаление изображения и возврат на начальный экран
 document.getElementById('deleteImageButton').addEventListener('click', () => {
     previewImg.classList.add('hidden');
     previewImg.classList.add('display-none');
     uploadBox.classList.remove('hidden');
     uploadBox.classList.remove('display-none');
-    previewImage.src = ''; // Очищаем изображение
-    fileInput.value = ''; // Очищаем поле выбора файла
+    previewImage.src = ''; 
+    fileInput.value = ''; 
 });
-
-
-
-// Показываем или скрываем выпадающий список при нажатии на кнопку Elements
 elementsButton.addEventListener('click', (event) => {
-    event.stopPropagation(); // Останавливаем всплытие события
+    event.stopPropagation();
 
-    // Получаем позицию кнопки elementsButton
     const buttonRect = elementsButton.getBoundingClientRect();
     
-    // Устанавливаем позицию выпадающего списка рядом с кнопкой
-    elementsDropdown.style.top = `${buttonRect.bottom + window.scrollY}px`; // Положение под кнопкой
-    elementsDropdown.style.left = `${buttonRect.left + window.scrollX}px`; // Выравнивание по левому краю
+    elementsDropdown.style.top = `${buttonRect.bottom + window.scrollY}px`; 
+    elementsDropdown.style.left = `${buttonRect.left + window.scrollX}px`;
 
-    // Показываем или скрываем dropdown
     elementsDropdown.classList.toggle('hidden');
     elementsDropdown.classList.toggle('visible');
 });
-
-// Скрываем выпадающий список, если щелкнули вне его
 document.addEventListener('click', (event) => {
     if (!elementsButton.contains(event.target) && !elementsDropdown.contains(event.target)) {
         elementsDropdown.classList.remove('visible');
         elementsDropdown.classList.add('hidden');
     }
 });
-
-// Добавление обработчиков событий для кнопок инструментов
 const elementButtons = document.querySelectorAll('.dropdown-button');
-
 elementButtons.forEach(button => {
     button.addEventListener('click', () => {
         const toolName = button.querySelector('span').textContent;
         console.log(`Вы выбрали инструмент: ${toolName}`);
-        // Здесь вызывайте функции для выбранных инструментов
     });
 });
-
-// Показ окна редактирования
 startEditingButton.addEventListener('click', () => {
     editWindow.classList.remove('hidden');
     editWindow.classList.add('visible');
 });
-
-// Закрытие окна редактирования
 closeEditButton.addEventListener('click', () => {
     editWindow.classList.remove('visible');
     editWindow.classList.add('hidden');
 });
-
-
-// Оптимизированный drag-and-drop обработчик
 uploadBox.addEventListener('dragover', handleDragOver);
 uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
 uploadBox.addEventListener('drop', handleDrop);
-
-// Кнопка "Попробовать снова" при ошибке
 tryAgainButton.addEventListener('click', resetUpload);
+const saveImage = () => {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = editableImage.naturalWidth;
+    canvas.height = editableImage.naturalHeight;
+    context.filter = `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) grayscale(${grayscale}%) sepia(${sepia}%)`;
+    context.translate(canvas.width / 2, canvas.height / 2);
+    if(rotateAngle !== 0)
+        context.rotate(rotateAngle * Math.PI / 180); 
+    context.scale(flipHorizontal, flipVertical);
+    context.drawImage(editableImage, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
 
-// Функция сброса состояния
+    const link = document.createElement("a");
+    link.download = "edited image"+imageType;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+saveImageButton.addEventListener('click', saveImage)
+
+
 function resetUpload() {
     fadeOut(errorContainer, () => {
         fadeIn(uploadBox);
-        hideLoader(); // Скрываем loader при отображении ошибки
+        hideLoader(); 
     });
-    fileInput.value = ''; // Очистка выбранного файла
+    fileInput.value = ''; 
 }
 
-// Функция скрытия с плавной анимацией
 function fadeOut(element, callback) {
     element.classList.add('hidden');
     setTimeout(() => {
@@ -118,7 +119,6 @@ function fadeOut(element, callback) {
     }, 500);
 }
 
-// Функция показа с плавной анимацией
 function fadeIn(element, callback) {
     element.classList.remove('display-none');
     setTimeout(() => {
@@ -127,18 +127,15 @@ function fadeIn(element, callback) {
     }, 10);
 }
 
-// Функция показа анимации загрузки
 function showLoader(fileName) {
     document.getElementById('loaderText').textContent = `File name ${fileName} is loading`;
     fadeIn(document.getElementById('loader'));
 }
 
-// Функция скрытия анимации загрузки
 function hideLoader() {
     fadeOut(document.getElementById('loader'));
 }
 
-// Функция обработки файла
 function handleFile(file) {
     if (!file) return;
 
@@ -147,58 +144,58 @@ function handleFile(file) {
     } else if (file.size > MAX_SIZE_BYTES) {
         showError(`File size exceeds ${MAX_SIZE_MB}MB limit.`, file.name);
     } else {
-        // Показываем анимацию загрузки
         showLoader(file.name);
+        imageType = file.type;
+        if(imageType === "image/png")
+            imageType = ".png";
+        else
+            imageType = ".jpg";
         
         const imageSrc = URL.createObjectURL(file);
 
         globalImageSrc = imageSrc;
+        originalImageSrc = imageSrc;
 
-        // Проверим, что мы получаем корректный URL
         console.log('Загруженный файл:', file);
         console.log('Путь к изображению:', globalImageSrc);
 
         previewImage.src = URL.createObjectURL(file);
         editableImage.src = URL.createObjectURL(file);
         previewImage.onload = () => {
-            URL.revokeObjectURL(previewImage.src); // Освобождаем память после загрузки
+            URL.revokeObjectURL(previewImage.src);
             URL.revokeObjectURL(editableImage.src);
 
-            // Переход к режиму предпросмотра с плавной анимацией
             setTimeout(() => {
                 fadeOut(uploadBox, () => {
                     fadeIn(previewImg);
-                    hideLoader(); // Скрываем loader только после загрузки и показа предпросмотра
+                    hideLoader();
                 });
-            }, 1000); // Время задержки для симуляции загрузки
+            }, 600);
             URL.revokeObjectURL(imageSrc.src);
         };
     }
 }
 
-// Функция отображения ошибки
 function showError(message, fileName) {
     errorMessage.textContent = message;
     fileNameDisplay.textContent = `File: ${fileName}`;
 
     fadeOut(previewImg, () => {
         fadeIn(errorContainer);
-        hideLoader(); // Скрываем loader при отображении ошибки
+        hideLoader();
     });
 
     fadeOut(uploadBox, () => {
         fadeIn(errorContainer);
-        hideLoader(); // Скрываем loader при отображении ошибки
+        hideLoader();
     });
 }
 
-// Функция обработки dragover
 function handleDragOver(event) {
     event.preventDefault();
     uploadBox.classList.add('dragover');
 }
 
-// Функция обработки события drop
 function handleDrop(event) {
     event.preventDefault();
     uploadBox.classList.remove('dragover');
@@ -206,21 +203,13 @@ function handleDrop(event) {
     handleFile(file);
 }
 
-// Опциональная функция для работы с несколькими файлами
-function handleMultipleFiles(files) {
-    if (files.length > 1) {
-        showError('Please upload only one file at a time.', '');
-    } else {
-        handleFile(files[0]);
-    }
-}
-
-// Функции для отображения параметров инструментов
 document.getElementById('cropButton').addEventListener('click', showCropParams);
 document.getElementById('resizeButton').addEventListener('click', showResizeParams);
 document.getElementById('RotateFlipButton').addEventListener('click', showRotateFlipParams);
 document.getElementById('adjustButton').addEventListener('click', showAdjustParams);
 document.getElementById('filtersButton').addEventListener('click', showFiltersParams);
+
+let cropRatio = '1:1';
 
 function showCropParams() {
     inspectorContent.innerHTML = `
@@ -233,23 +222,122 @@ function showCropParams() {
             </select>
         </div>
     `;
+
+    document.getElementById('cropRatio').addEventListener('change', (event) => {
+        cropRatio = event.target.value;
+        cropImage();
+    });
 }
+
+function cropImage() {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const image = editableImage;
+
+    const [ratioWidth, ratioHeight] = cropRatio.split(':').map(Number);
+
+    const imageAspectRatio = image.naturalWidth / image.naturalHeight;
+    let cropWidth, cropHeight;
+
+    if (imageAspectRatio > ratioWidth / ratioHeight) {
+        cropHeight = image.naturalHeight;
+        cropWidth = cropHeight * (ratioWidth / ratioHeight);
+    } else {
+        cropWidth = image.naturalWidth;
+        cropHeight = cropWidth / (ratioWidth / ratioHeight);
+    }
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+
+    context.drawImage(
+        image,
+        (image.naturalWidth - cropWidth) / 2,
+        (image.naturalHeight - cropHeight) / 2,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    editableImage.src = canvas.toDataURL();
+}
+
 
 function showResizeParams() {
     inspectorContent.innerHTML = `
     <div class="tool-params resize-params">
         <label for="widthInput">Width (px)</label>
-        <input type="number" id="widthInput">
+        <input type="text" id="widthInput">
         
         <label for="heightInput">Height (px)</label>
-        <input type="number" id="heightInput">
-        
+        <input type="text" id="heightInput">
+
         <label for="constrainProportions">
             <input type="checkbox" id="constrainProportions"> Constrain proportions
         </label>
     </div>
     `;
+
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+    const constrainProportionsCheckbox = document.getElementById('constrainProportions');
+
+    const maxWidth = editableImage.naturalWidth;
+    const maxHeight = editableImage.naturalHeight;
+    widthInput.value = maxWidth;
+    heightInput.value = maxHeight;
+
+    const aspectRatio = maxWidth / maxHeight;
+
+    widthInput.setAttribute('max', maxWidth);
+    heightInput.setAttribute('max', maxHeight);
+
+    widthInput.addEventListener('input', () => {
+        if (parseInt(widthInput.value, 10) > maxWidth) {
+            widthInput.value = maxWidth;
+        }
+
+        if (constrainProportionsCheckbox.checked) {
+            heightInput.value = Math.round(widthInput.value / aspectRatio);
+        }
+        resizeImage();
+    });
+
+    heightInput.addEventListener('input', () => {
+        if (parseInt(heightInput.value, 10) > maxHeight) {
+            heightInput.value = maxHeight;
+        }
+
+        if (constrainProportionsCheckbox.checked) {
+            widthInput.value = Math.round(heightInput.value * aspectRatio);
+        }
+        resizeImage();
+    });
+
+    constrainProportionsCheckbox.addEventListener('change', () => {
+        if (constrainProportionsCheckbox.checked) {
+            heightInput.value = Math.round(widthInput.value / aspectRatio);
+        }
+    });
+
+    function resizeImage() {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = widthInput.value;
+        canvas.height = heightInput.value;
+
+        context.drawImage(editableImage, 0, 0, canvas.width, canvas.height);
+
+        editableImage.src = canvas.toDataURL();
+    }
 }
+
+
+
 
 function showRotateFlipParams() {
     inspectorContent.innerHTML = `
@@ -277,30 +365,64 @@ function showRotateFlipParams() {
         </div>
     </div>
     `;
+
+    const rotateFlipButtons = document.querySelectorAll('.rotate-flip-params button');
+
+    rotateFlipButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            if(button.id === "rotateLeftButton") {
+                rotateAngle -= 90;
+            } else if(button.id === "rotateRightButton") {
+                rotateAngle += 90;
+            } else if(button.id === "flipHorizontalButton") {
+                flipHorizontal = flipHorizontal === 1 ? -1 : 1;
+            } else if(button.id === "flipVerticalButton") {
+                flipVertical = flipVertical === 1 ? -1 : 1;
+            }
+            applyFilters();
+        })
+    })
 }
 
 function showAdjustParams() {
     inspectorContent.innerHTML = `
     <div class="tool-params adjust-params">
         <label for="brightness">Brightness</label>
-        <input type="range" id="brightness" min="0" max="100" value="50">
+        <input type="range" id="brightness" min="0" max="200" value="${brightness}">
         
         <label for="contrast">Contrast</label>
-        <input type="range" id="contrast" min="0" max="100" value="50">
+        <input type="range" id="contrast" min="0" max="200" value="${contrast}">
         
         <label for="saturation">Saturation</label>
-        <input type="range" id="saturation" min="0" max="100" value="50">
+        <input type="range" id="saturation" min="0" max="200" value="${saturation}">
         
-        <label for="exposition">Exposition</label>
-        <input type="range" id="exposition" min="0" max="100" value="50">
+        <label for="grayscale">Grayscale</label>
+        <input type="range" id="grayscale" min="0" max="100" value="${grayscale}">
+
+        <label for="sepia">Sepia</label>
+        <input type="range" id="sepia" min="0" max="100" value="${sepia}">
     </div>
     `;
 
     const sliders = document.querySelectorAll('.adjust-params input[type="range"]');
     sliders.forEach(slider => {
-        updateSliderBackground(slider); // Установить начальный цвет
+        updateSliderBackground(slider); 
+
         slider.addEventListener('input', function () {
-            updateSliderBackground(slider); // Обновлять цвет при изменении значения
+            updateSliderBackground(slider);
+            
+            if (slider.id === 'brightness') {
+                brightness = slider.value;
+            } else if (slider.id === 'contrast') {
+                contrast = slider.value;
+            } else if (slider.id === 'saturation') {
+                saturation = slider.value;
+            } else if (slider.id === 'grayscale') {
+                grayscale = slider.value;
+            } else if (slider.id === 'sepia') {
+                sepia = slider.value;
+            }
+            applyFilters();
         });
     });
 }
@@ -310,6 +432,10 @@ function updateSliderBackground(slider) {
     slider.style.background = `linear-gradient(to right, #33aada ${value}%, #ccc ${value}%)`;
 }
 
+const applyFilters = () => {
+    editableImage.style.transform = `rotate(${rotateAngle}deg) scale(${flipHorizontal}, ${flipVertical})`;
+    editableImage.style.filter = `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) grayscale(${grayscale}%) sepia(${sepia}%)`;
+};
 
 function showFiltersParams() {
     if (!globalImageSrc) {
@@ -361,25 +487,60 @@ function showFiltersParams() {
     </div>
     `;
 
-    applyFilters(); // Применяем фильтры к изображениям
+    applyFiltersForExamples();
 
-    // Добавляем обработчики кликов на кнопки фильтров
     const filterButtons = document.querySelectorAll('.filter-button');
     filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Убираем класс active у всех кнопок
+        button.addEventListener('click', (event) => {
             filterButtons.forEach(btn => btn.classList.remove('active'));
 
-            // Добавляем класс active на нажатую кнопку
             button.classList.add('active');
+
+            const filterId = event.currentTarget.id;
+            applySelectedFilter(filterId);
         });
     });
 }
 
-
-// Функция для применения фильтров
-function applyFilters() {
-    document.getElementById('previewBW').style.filter = 'grayscale(100%)'; // Чёрно-белый фильтр
-    document.getElementById('previewSepia').style.filter = 'sepia(100%)';  // Сепия
-    document.getElementById('previewVintage').style.filter = 'contrast(120%) saturate(70%)';  // Винтаж
+function applySelectedFilter(filterId) {
+    if (filterId === 'filterNone') {
+        brightness = 100, saturation = 100, contrast = 100, grayscale = 0, sepia = 0;
+    } else if (filterId === 'filterBW') {
+        brightness = 100, saturation = 100, contrast = 100, grayscale = 100, sepia = 0;
+    } else if (filterId === 'filterSepia') {
+        brightness = 100, saturation = 100, contrast = 100, grayscale = 100, sepia = 100;
+    } else if (filterId === 'filterVintage') {
+        brightness = 100, saturation = 70, contrast = 120, grayscale = 0, sepia = 0;
+    }
+    applyFilters();
 }
+
+function applyFiltersForExamples() {
+    document.getElementById('previewBW').style.filter = 'grayscale(100%)';
+    document.getElementById('previewSepia').style.filter = 'sepia(100%)';
+    document.getElementById('previewVintage').style.filter = 'contrast(120%) saturate(70%)';
+}
+
+
+document.getElementById('revertButton').addEventListener('click', () => {
+    if (globalImageSrc) {
+        editableImage.src = globalImageSrc;
+
+        console.log(globalImageSrc);
+        console.log(editableImage.src);
+        
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const image = new Image();
+        image.src = globalImageSrc;
+
+        image.onload = () => {
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+
+            context.drawImage(image, 0,0, canvas.width, canvas.height);
+
+            editableImage.src = canvas.toDataURL();
+        };
+    }
+});
