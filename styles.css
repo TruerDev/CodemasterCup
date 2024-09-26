@@ -395,6 +395,13 @@ button:hover {
     align-self: center;
 }
 
+.custom-rotate-group {
+    display: flex;
+    align-items: center; /* Вертикальное выравнивание */
+    gap: 15px; /* Отступ между полем и кнопкой */
+    align-self: center;
+}
+
 .rotate-flip-params button {
     background: none;
     border: 1px solid #acacac;
